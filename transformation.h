@@ -1,5 +1,6 @@
 #ifndef _TRANSFORMATION_H_
 #define _TRANSFORMATION_H_
+#include <stdio.h>
 
 
 // TYPES FOR WHAT IS INSIDE THE CLAUSES
@@ -15,10 +16,10 @@ typedef struct Cellule_Liste_ {
 
 typedef struct Liste_ {
 	unsigned int size;       
-	Cellule_Liste_ *first; 
-	Cellule_Liste_ *last;  
-	                       
+	Cellule *first; 
+	Cellule *last;                         
 } Liste;
+
 
 
 // TYPES FOR THE CLAUSE ITSELF
@@ -31,8 +32,8 @@ typedef struct Cellule_Liste_Clause_ {
 
 typedef struct Liste_Clause_ {
 	unsigned int size;       
-	Cellule_Liste_Clause_ *first; 
-	Cellule_Liste_Clause_ *last;  
+	Cellule_Clause *first; 
+	Cellule_Clause *last;  
 	                       
 } Liste_Clause;
 
@@ -47,14 +48,12 @@ typedef struct Cellule_Liste2_ {
 
 typedef struct Liste2_ {
 	unsigned int size;       
-	Cellule_Liste2_ *first; 
+	Cellule2 *first; 
 	//Cellule_Liste2_ *last;  
 	                       
 } Liste2;
 
-
 // TYPES FOR THE CLAUSE ITSELF
-
 typedef struct Cellule_Liste_Clause2_ {
     Liste2 clause;   
 	struct Cellule_Liste_Clause2_* suiv;
@@ -64,14 +63,19 @@ typedef struct Cellule_Liste_Clause2_ {
 typedef struct Liste_Clause2_ {
 	unsigned int size;  //nb of clauses in the formula     
 	unsigned int nb_var;
-	Cellule_Liste_Clause2_ *first; 
-	Cellule_Liste_Clause2_ *last;  
+	Cellule_Clause2 *first; 
+	Cellule_Clause2 *last;  
 	                       
 } Liste_Clause2;
 
 
+Liste* init_liste();
 
-void read_sudoku ();
+void add_cell(Liste *L, Cellule *c) ;
+
+Liste* read_sudoku (FILE *f);
+
+void afficher_liste(Liste *L);
 
 void create_dimacs (Liste_Clause2 LC, char* file_name);
 
