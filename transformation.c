@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 Liste* init_liste() {    
     Liste *new_list = malloc(sizeof(Liste));
     new_list->first = NULL;
