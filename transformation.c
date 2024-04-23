@@ -86,8 +86,7 @@ void afficher_liste(Liste *L) {
 }
 
 
-
-/*1. Function which takes the clause list as an argument and writes the DIMACS file 
+/* Function which takes the clause list as an argument and writes the DIMACS file 
 (this list will have already been transformed into x’s with readable indices: x1, x2, x3,….)*/
 void create_dimacs (Liste_Clause2 LC, char* file_name) {
 
@@ -101,7 +100,7 @@ void create_dimacs (Liste_Clause2 LC, char* file_name) {
     
     //Parcours de tous les éléments 
     if (LC.first == NULL) {
-        printf("Erreur, la liste est vide\n");
+        printf("Error, the list is empty\n");
         fclose(f);
         return;
     } else {
