@@ -43,7 +43,6 @@ Liste* read_sudoku(FILE *f) {
                     break;
                 case '|':
                 case '.':
-                    // No hay espacio donde se especifica la seccion de la grid;
                     break;
                 // New line
                 case '\\':
