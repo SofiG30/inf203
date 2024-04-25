@@ -1,0 +1,13 @@
+# 1st line -> Size of the grid
+# Followed by the instance of the grid 
+EX: 
+? ? ? 2
+? ? ? ?
+? ? ? ? 
+? ? 1 ?
+
+'#' Separates the grid and the regions
+1 1 1 2
+1 2 2 2 
+3 3 3 4 
+3 4 4 4
