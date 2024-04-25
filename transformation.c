@@ -80,7 +80,7 @@ Liste* read_sudoku(FILE *f, Liste *Grid) {
                     i++;
                     break;
                 default:
-                    if ( val >= '1' && val <= '5') {
+                    if (isdigit(val)) {
                         // A value already in the grid 
                         Cellule *new_cell = malloc(sizeof(Cellule));
                         new_cell->col = j;
@@ -102,10 +102,10 @@ Liste* read_sudoku(FILE *f, Liste *Grid) {
             //printf(" val  = %c" , val);
             Cellule *new_cell = malloc(sizeof(Cellule));
             new_cell->col = j;
-            printf(" line = %d, col = %d", i, j);
+           // printf(" line = %d, col = %d", i, j);
             new_cell->li = i;
             new_cell->reg = atoi(&val);
-            printf(" reg = %d\n", new_cell->reg);
+            //printf(" reg = %d\n", new_cell->reg);
             new_cell->el = 0;
             new_cell->suiv = NULL;
             add_cell(Grid, new_cell);
@@ -123,6 +123,7 @@ Liste* read_sudoku(FILE *f, Liste *Grid) {
     return Se;
 
 }
+
  
 void afficher_liste(Liste *L) {
 
