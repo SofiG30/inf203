@@ -9,16 +9,19 @@ typedef struct Cellule_Liste_ {
 	//cell = (li, col, el)
 	int li;
     int col;
-    int el;   
+    int el; 
+	int reg ;
 	struct Cellule_Liste_* suiv;
 } Cellule;
 
 
 typedef struct Liste_ {
-	unsigned int size;       
+	unsigned int size_grid;
+	unsigned int length;       
 	Cellule *first; 
 	Cellule *last;                         
 } Liste;
+
 
 
 
@@ -73,7 +76,7 @@ Liste* init_liste();
 
 void add_cell(Liste *L, Cellule *c) ;
 
-Liste* read_sudoku (FILE *f);
+Liste* read_sudoku (FILE *f, Liste *Grid);
 
 void afficher_liste(Liste *L);
 
