@@ -140,6 +140,12 @@ void afficher_liste(Liste *L) {
 
 }
 
+/*Function that creates a disjunction for each cell (and returns a Liste of clauses (ie list of list of cells)*/
+Liste_Clause2* construct_clause (Liste *L){
+    //L is the list of the elements already defined in the grid
+    
+}
+
 
 /* Function which takes the clause list as an argument and writes the DIMACS file 
 (this list will have already been transformed into x’s with readable indices: x1, x2, x3,….)*/
