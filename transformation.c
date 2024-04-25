@@ -23,25 +23,56 @@ void add_cell(Liste *L, Cellule *c) {
     }
 }
 
+void add_regions(Liste *Grid, Liste *Se) {
+
+    if ( Se->first == NULL && Grid->first == NULL) {
+        printf("Error, a list is empty\n");
+        return;
+    }
+
+    Cellule *curr_Grid = Grid->first;
+    Cellule *curr = Se->first;
+    while (curr != NULL && curr_Grid != NULL) {
+       // printf("col grid %d",curr_Grid->col);
+       // printf("line grid %d",curr_Grid->li);
+
+        if (curr_Grid->col == curr->col && curr_Grid->li == curr->li) {
+            //printf("Reg = %d",  curr_Grid->reg);
+            curr->reg = curr_Grid->reg;
+            curr_Grid->el = curr->el;
+            curr = curr->suiv;
+            curr_Grid = curr_Grid->suiv;
+        } else {
+            // The grid is stored in order of lines (only needed to change the cell of the grid)
+            curr_Grid = curr_Grid->suiv;
+        }
+    }
+    while (curr_Grid != NULL) {
+        curr_Grid = curr_Grid->suiv;
+    }
+}
+
 // Precondition : le fichier doit etre ouvert en mode lecture
-Liste* read_sudoku(FILE *f) {
+Liste* read_sudoku(FILE *f, Liste *Grid) {
     Liste *Se = init_liste();
     if ( f == NULL) {
         printf("Erreur dans le pointeur du fichier\n");
     } else {
-        // Size of the grid 
-        fscanf(f, "%d", &Se->size);
+        //printf("Error\n");
 
+        // Size of the grid 
+        fscanf(f, "%d", &Se->size_grid);
+        Grid->size_grid = Se->size_grid;
+        //printf("Error\n");
+        // GRID
         char val;
-        // i = line, j = column
+        // i = line, j = column, r = region
         int i = 1,j =1;
-       while (fscanf(f, " %c", &val) != EOF) {
-        switch(val) {
+        //printf("Error\n");
+        while (fscanf(f, " %c", &val) != EOF && val != '#') {
+            switch(val) {
                 case '?':
                     j++;
-                    break;
-                case '|':
-                case '.':
                     break;
                 // New line
                 case '\\':
@@ -62,12 +93,37 @@ Liste* read_sudoku(FILE *f) {
                     break;
             }
        }
+        //printf("Error\n");
+        // Regions 
+       i = 1; 
+       j = 1;
+        while (fscanf(f, " %c", &val) != EOF) {
+            if (val != '\\') {  
+            //printf(" val  = %c" , val);
+            Cellule *new_cell = malloc(sizeof(Cellule));
+            new_cell->col = j;
+            printf(" line = %d, col = %d", i, j);
+            new_cell->li = i;
+            new_cell->reg = atoi(&val);
+            printf(" reg = %d\n", new_cell->reg);
+            new_cell->el = 0;
+            new_cell->suiv = NULL;
+            add_cell(Grid, new_cell);
+            j++;
+        } else {
+            i++;
+            j = 1;
+        }
+}
+
+        // Add the regions to the cells in the Se list 
+        //printf("Error\n");
+        add_regions(Grid, Se);
     }
     return Se;
 
 }
-
-
+ 
 void afficher_liste(Liste *L) {
 
     if (L->first == NULL) {
