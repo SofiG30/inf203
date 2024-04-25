@@ -80,6 +80,8 @@ Liste* read_sudoku (FILE *f, Liste *Grid);
 
 void afficher_liste(Liste *L);
 
+Liste_Clause2* construct_clause (Liste *L);
+
 void create_dimacs (Liste_Clause2 LC, char* file_name);
 
 #endif
