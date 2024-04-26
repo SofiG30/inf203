@@ -10,15 +10,19 @@ EXECUTABLES = main
 all : $(EXECUTABLES)
 
 
-transformation.o: transformation.c transformation.h
+transformation.o: transformation.c transformation.h types.h
 
-main.o: main.c transformation.h
+types.o: types.c types.h 
+
+dict.o: dict.c dict.h types.h
+
+main.o: main.c transformation.h dict.h types.h
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $<
 
 
-main: main.o transformation.o
+main: main.o transformation.o dict.o types.o
 
 
 %: %.o
@@ -27,3 +31,4 @@ main: main.o transformation.o
 
 clean :
 	rm -rf *.o $(EXECUTABLES)
+
