@@ -197,12 +197,12 @@ bool cellule_est_dans_liste(Cellule_D *cellule, Liste_D *liste) {
         return false;
     }
 
-    Cellule_D *courant = liste->first;
-    while (courant != NULL) {
-        if (courant == cellule) {
+    Cellule_D *curr = liste->first;
+    while (curr != NULL) {
+        if ((curr->col == cellule->col) && (curr->el == cellule->el) && (curr->li == cellule->li) ) {
             return true;
         }
-        courant = courant->suiv;
+        curr = curr->suiv;
     }
 
     return false;
@@ -211,15 +211,19 @@ bool cellule_est_dans_liste(Cellule_D *cellule, Liste_D *liste) {
 
 bool is_number_in_lcr (Cellule_D *cell, Liste_D *Grid) {
     // VERIFY THE NUMBER IS NOT PRESENT ON THE SAME LINE
-    for (int i = 1; i < Grid->size_grid; i++) {
+    for (int i = 1; i <= Grid->size_grid; i++) {
         cell->col = i;
-        if (cellule_est_dans_liste(cell, Grid)) {
-            return true;
+        Cellule_D *curr = Grid->first;
+        while (curr != NULL) {
+            if ((curr->col == cell->col) && (curr->el == cell->el) && (curr->li == cell->li)) {
+                return true;
+            }
+            curr = curr->suiv;
         }
     }
 
     // VERIFY THE NUMBER IS NOT PRESENT IN THE SAME COLUMN
-    for (int i = 1; i < Grid->size_grid; i++) {
+    for (int i = 1; i <= Grid->size_grid; i++) {
         cell->li = i;
         if (cellule_est_dans_liste(cell, Grid)) {
             return true;
@@ -227,7 +231,7 @@ bool is_number_in_lcr (Cellule_D *cell, Liste_D *Grid) {
     }
 
     // VERIFY THE NUMBER IS NOT PRESENT IN THE SAME REGION
-    for (int i = 1; i < Grid->size_grid; i++) {
+    for (int i = 1; i <= Grid->size_grid; i++) {
         cell->reg = i;
         if (cellule_est_dans_liste(cell, Grid)) {
             return true;
@@ -244,10 +248,10 @@ Liste_C* construct_clause (Liste_D *L){
     Liste_C *clause = init_empty_clause();
     Liste_D *disjunction = init_liste();
     for (Cellule_D *curr = L->first; curr != NULL; curr = curr->suiv) {
-        if (curr->el == 0) { // if the element is unknown
-            for (int i = 1; i < L->size_grid; i++) {
+        if (curr->el == 0) { // if the element is unknown (i.e the cell is empty)
+            for (int i = 1; i <= L->size_grid; i++) {
+                curr->el = i;    
                 if (is_number_in_lcr(curr, L) == false) { // if the number is not present on the line, column, or region then add it to the clause
-                    curr->el = i;
                     add_cell_D(disjunction, curr);
                     Cellule_C *cell_clause = malloc(sizeof(Cellule_C));
                     cell_clause->data = *disjunction;
