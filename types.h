@@ -72,7 +72,9 @@ typedef struct Liste_Clause2_ {
 // Auxiliary functions
 Liste_D* init_liste();
 
-void add_cell(Liste_D *L, Cellule_D *c) ;
+void add_cell_D(Liste_D *L, Cellule_D *c) ;
+
+void add_cell_C(Liste_C *L, Cellule_C *c);
 
 Liste_C* init_listeClause();
 
