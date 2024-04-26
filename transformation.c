@@ -224,4 +224,32 @@ Liste_Di_2* rewrite_var(Liste_C *L) {
 }
 
 
+//Precondition : the file must be open in lecture mode
+void give_solution (FILE *ans_sat, dictionary *D){
+
+    if ( ans_sat == NULL) {
+        printf("Erreur dans le pointeur du fichier\n");
+    } else {
+        
+        // Satisfiability
+        char[6] is_sat; //it will be SAT or UNSAT (max 5 characters)
+        int var;
+
+        fscanf(ans_sat, "%s", is_sat);
+        if (is_sat == "SAT"){
+            fscanf(ans_sat, " %c", var);
+            while (var != 0){
+                /*we are only interested in the variables that are positive (i.e which are true)
+                they gives which combination of line, col, region and element is true*/
+                cell_dict *cell_d = find_relation(D, var);
+                
+                fscanf(ans_sat, " %c", var);
+            }
+
+        } else {
+            //the formula given is unsatisfiable
+
+        }
+    }
+}
 
