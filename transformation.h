@@ -19,6 +19,7 @@ Liste_Di_2* rewrite_var(Liste_C *L);
 
 void create_dimacs (Liste_Di_2* LC, char* file_name);
 
+void give_solution (FILE *ans_sat, dictionary *D);
 
 
 #endif
