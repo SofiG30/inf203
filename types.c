@@ -13,8 +13,7 @@ Liste_D* init_liste() {
     return new_list;
 }
 
-void add_cell(Liste_D *L, Cellule_D *c) {
-
+void add_cell_D(Liste_D *L, Cellule_D *c) {
     if (L->first == NULL) {
         L->first = c;
         L->last = c;
@@ -23,6 +22,23 @@ void add_cell(Liste_D *L, Cellule_D *c) {
         L->last->suiv = c;
         L->last = L->last->suiv;
         L->length = L->length + 1;
+    }
+}
+
+
+void add_cell_C(Liste_C *L, Cellule_C *c) {
+    if (L == NULL || c == NULL) {
+        return;
+    }
+
+    if (L->first == NULL) {
+        L->first = c;
+        L->last = c;
+        L->size = 1;
+    } else {
+        L->last->suiv = c;
+        L->last = L->last->suiv;
+        L->size = L->size + 1;
     }
 }
 
