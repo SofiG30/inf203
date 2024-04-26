@@ -5,22 +5,22 @@
 
 // TYPES FOR WHAT IS INSIDE THE CLAUSES
 
-typedef struct Cellule_Liste_ {
+typedef struct Cellule_Liste_Disjunction_ {
 	//cell = (li, col, el)
 	int li;
     int col;
     int el; 
-	int reg ;
-	struct Cellule_Liste_* suiv;
-} Cellule;
+	int reg;
+	struct Cellule_Liste_Disjunction_* suiv;
+} Cellule_D;
 
 
-typedef struct Liste_ {
+typedef struct Liste_Disjunction_ {
 	unsigned int size_grid;
 	unsigned int length;       
-	Cellule *first; 
-	Cellule *last;                         
-} Liste;
+	Cellule_D *first; 
+	Cellule_D *last;                         
+} Liste_D;
 
 
 
@@ -28,17 +28,17 @@ typedef struct Liste_ {
 // TYPES FOR THE CLAUSE ITSELF
 
 typedef struct Cellule_Liste_Clause_ {
-    Liste data;   
+    Liste_D data;   
 	struct Cellule_Liste_Clause_* suiv;
-} Cellule_Clause;
+} Cellule_C;
 
 
 typedef struct Liste_Clause_ {
 	unsigned int size;       
-	Cellule_Clause *first; 
-	Cellule_Clause *last;  
+	Cellule_C *first; 
+	Cellule_C *last;  
 	                       
-} Liste_Clause;
+} Liste_C;
 
 
 // ?? TYPES FOR THE 2ND TYPE OF FORMULA ?? (variables are just integers (+ or -))
@@ -58,13 +58,13 @@ typedef struct Liste2_ {
 
 // TYPES FOR THE CLAUSE ITSELF
 typedef struct Cellule_Liste_Clause2_ {
-    Liste2 clause;   
+    Liste2 disjunction;   
 	struct Cellule_Liste_Clause2_* suiv;
 } Cellule_Clause2;
 
 
 typedef struct Liste_Clause2_ {
-	unsigned int size;  //nb of clauses in the formula     
+	unsigned int size;  //nb of disjunctions in the formula     
 	unsigned int nb_var;
 	Cellule_Clause2 *first; 
 	Cellule_Clause2 *last;  
@@ -72,15 +72,21 @@ typedef struct Liste_Clause2_ {
 } Liste_Clause2;
 
 
-Liste* init_liste();
+Liste_D* init_liste();
 
-void add_cell(Liste *L, Cellule *c) ;
+void add_cell_D(Liste_D *L, Cellule_D *c) ;
 
-Liste* read_sudoku (FILE *f, Liste *Grid);
+void add_cell_C(Liste_C *L, Cellule_C *c) ;
 
-void afficher_liste(Liste *L);
+Liste_C* init_empty_clause();
 
-Liste_Clause2* construct_clause (Liste *L);
+int is_number_in_lcr (int li, int col, int el, int reg, Liste_C *Grid);
+
+Liste_C* read_sudoku (FILE *f, Liste_C *Grid);
+
+void afficher_liste(Liste_C *L);
+
+Liste_C* construct_clause (Liste_C *L);
 
 void create_dimacs (Liste_Clause2 LC, char* file_name);
 
