@@ -26,6 +26,10 @@ void add_cell_D(Liste_D *L, Cellule_D *c) {
 
 
 void add_cell_C(Liste_C *L, Cellule_C *c) {
+    if (L == NULL || c == NULL) {
+        return;
+    }
+
     if (L->first == NULL) {
         L->first = c;
         L->last = c;
@@ -106,37 +110,53 @@ Liste_C* read_sudoku(FILE *f, Liste_C *Grid) {
                 default:
                     if (isdigit(val)) {
                         // A value already in the grid 
-                        Cellule_C *new_cell = malloc(sizeof(Cellule_C));
-                        new_cell->data.first->col = j;
-                        new_cell->data.first->li = i;
-                        new_cell->data.first->el = atoi(&val);
-                        new_cell->data.first->suiv = NULL;
-                        add_cell_C(Se, new_cell);
+                        Liste_D *dis = init_liste(); // Assuming init_liste initializes a Liste_D properly
+                        Cellule_D *cell = malloc(sizeof(Cellule_D));
+                        cell->col = j;
+                        cell->el = atoi(&val);
+                        cell->li = i;
+                        cell->suiv = NULL; 
+
+                        add_cell_D(dis, cell); // Assuming add_cell_D adds cell to dis properly
+
+                        Cellule_C *cell2 = malloc(sizeof(Cellule_C));
+                        cell2->data = *dis; // Assigning properly initialized Liste_D to cell2->data
+                        cell2->suiv = NULL;
+   
+                        add_cell_C(Se, cell2);
                         j++;
+
+                        free(cell);
+                        free(cell2);
                     }
                     break;
             }
        }
         //printf("Error\n");
         // REGIONS 
-       i = 1; 
-       j = 1;
+        i = 1; 
+        j = 1;
         while (fscanf(f, " %c", &val) != EOF) {
             if (val != '\\') {  
-            //printf(" val  = %c" , val);
-            Cellule_C *new_cell = malloc(sizeof(Cellule_C));
-            new_cell->data.first->col = j;
-           // printf(" line = %d, col = %d", i, j);
-            new_cell->data.first->li = i;
-            new_cell->data.first->reg = atoi(&val);
-            //printf(" reg = %d\n", new_cell->reg);
-            new_cell->data.first->el = 0;
-            new_cell->data.first->suiv = NULL;
-            add_cell_C(Grid, new_cell);
-            j++;
-        } else {
-            i++;
-            j = 1;
+                //printf(" val  = %c" , val);
+                Liste_D *dis = init_liste(); // Assuming init_liste initializes a Liste_D properly
+                Cellule_D *cell = malloc(sizeof(Cellule_D));
+                cell->col = j;
+                cell->el = 0;
+                cell->li = i;
+                cell->suiv = NULL;    
+                add_cell_D(dis, cell); // Assuming add_cell_D adds cell to dis prope    
+                Cellule_C *cell2 = malloc(sizeof(Cellule_C));
+                cell2->data = *dis; // Assigning properly initialized Liste_D to cell2->data
+                cell2->suiv = NULL;   
+                add_cell_C(Grid, cell2);
+                j++;
+
+                free(cell);
+                free(cell2);
+            } else {
+                i++;
+                j = 1;
         }
 }
 
@@ -155,9 +175,13 @@ void afficher_liste(Liste_C *L) {
         printf("Error, the list is empty\n");
         return;
     } else {
-        Cellule_D *curr = L->first->data.first;
+        Cellule_C *curr = L->first;
         while (curr != NULL) {
-            printf(" (%d, %d, %d) , ", curr->li, curr->col, curr->el);
+            if (curr->data.first != NULL) {
+                printf("(%d, %d, %d) , ", curr->data.first->li, curr->data.first->col, curr->data.first->el);
+            } else {
+                printf("NULL"); // Handle case where curr->data.first is NULL
+            }
             curr = curr->suiv;
         }
     } 
