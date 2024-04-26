@@ -1,17 +1,31 @@
 #include "transformation.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
-Liste* init_liste() {    
-    Liste *new_list = malloc(sizeof(Liste));
+Liste_D* init_liste() {    
+    Liste_D *new_list = malloc(sizeof(Liste_D));
     new_list->first = NULL;
     new_list->last = NULL;
-    new_list->size = 0;
+    new_list->length = 0;
+    new_list->size_grid = 0;
     return new_list;
 }
 
-void add_cell(Liste *L, Cellule *c) {
+void add_cell_D(Liste_D *L, Cellule_D *c) {
+    if (L->first == NULL) {
+        L->first = c;
+        L->last = c;
+        L->length = 1;
+    } else {
+        L->last->suiv = c;
+        L->last = L->last->suiv;
+        L->length = L->length + 1;
+    }
+}
 
+
+void add_cell_C(Liste_C *L, Cellule_C *c) {
     if (L->first == NULL) {
         L->first = c;
         L->last = c;
@@ -23,23 +37,33 @@ void add_cell(Liste *L, Cellule *c) {
     }
 }
 
-void add_regions(Liste *Grid, Liste *Se) {
+
+Liste_C* init_empty_clause() {
+    Liste_C *new_list = malloc(sizeof(Liste_C));
+    new_list->first = NULL;
+    new_list->last = NULL;
+    new_list->size = 0;
+    return new_list;
+}
+
+
+void add_regions(Liste_C *Grid, Liste_C *Se) {
 
     if ( Se->first == NULL && Grid->first == NULL) {
-        printf("Error, a list is empty\n");
+        printf("Error, lists are empty\n");
         return;
     }
 
-    Cellule *curr_Grid = Grid->first;
-    Cellule *curr = Se->first;
+    Cellule_C *curr_Grid = Grid->first;
+    Cellule_C *curr = Se->first;
     while (curr != NULL && curr_Grid != NULL) {
        // printf("col grid %d",curr_Grid->col);
        // printf("line grid %d",curr_Grid->li);
 
-        if (curr_Grid->col == curr->col && curr_Grid->li == curr->li) {
+        if (curr_Grid->data.first->col == curr->data.first->col && curr_Grid->data.first->li == curr->data.first->li) {
             //printf("Reg = %d",  curr_Grid->reg);
-            curr->reg = curr_Grid->reg;
-            curr_Grid->el = curr->el;
+            curr->data.first->reg = curr_Grid->data.first->reg;
+            curr_Grid->data.first->el = curr->data.first->el;
             curr = curr->suiv;
             curr_Grid = curr_Grid->suiv;
         } else {
@@ -53,16 +77,16 @@ void add_regions(Liste *Grid, Liste *Se) {
 }
 
 // Precondition : le fichier doit etre ouvert en mode lecture
-Liste* read_sudoku(FILE *f, Liste *Grid) {
-    Liste *Se = init_liste();
-    if ( f == NULL) {
+Liste_C* read_sudoku(FILE *f, Liste_C *Grid) {
+    Liste_C *Se = init_empty_clause();
+    if (f == NULL) {
         printf("Erreur dans le pointeur du fichier\n");
     } else {
         //printf("Error\n");
 
         // Size of the grid 
-        fscanf(f, "%d", &Se->size_grid);
-        Grid->size_grid = Se->size_grid;
+        fscanf(f, "%d", &Se->first->data.size_grid);
+        Grid->first->data.size_grid = Se->first->data.size_grid;
         //printf("Error\n");
         // GRID
         char val;
@@ -82,33 +106,33 @@ Liste* read_sudoku(FILE *f, Liste *Grid) {
                 default:
                     if (isdigit(val)) {
                         // A value already in the grid 
-                        Cellule *new_cell = malloc(sizeof(Cellule));
-                        new_cell->col = j;
-                        new_cell->li = i;
-                        new_cell->el = atoi(&val);
-                        new_cell->suiv = NULL;
-                        add_cell(Se, new_cell);
+                        Cellule_C *new_cell = malloc(sizeof(Cellule_C));
+                        new_cell->data.first->col = j;
+                        new_cell->data.first->li = i;
+                        new_cell->data.first->el = atoi(&val);
+                        new_cell->data.first->suiv = NULL;
+                        add_cell_C(Se, new_cell);
                         j++;
                     }
                     break;
             }
        }
         //printf("Error\n");
-        // Regions 
+        // REGIONS 
        i = 1; 
        j = 1;
         while (fscanf(f, " %c", &val) != EOF) {
             if (val != '\\') {  
             //printf(" val  = %c" , val);
-            Cellule *new_cell = malloc(sizeof(Cellule));
-            new_cell->col = j;
+            Cellule_C *new_cell = malloc(sizeof(Cellule_C));
+            new_cell->data.first->col = j;
            // printf(" line = %d, col = %d", i, j);
-            new_cell->li = i;
-            new_cell->reg = atoi(&val);
+            new_cell->data.first->li = i;
+            new_cell->data.first->reg = atoi(&val);
             //printf(" reg = %d\n", new_cell->reg);
-            new_cell->el = 0;
-            new_cell->suiv = NULL;
-            add_cell(Grid, new_cell);
+            new_cell->data.first->el = 0;
+            new_cell->data.first->suiv = NULL;
+            add_cell_C(Grid, new_cell);
             j++;
         } else {
             i++;
@@ -125,13 +149,13 @@ Liste* read_sudoku(FILE *f, Liste *Grid) {
 }
 
  
-void afficher_liste(Liste *L) {
+void afficher_liste(Liste_C *L) {
 
     if (L->first == NULL) {
         printf("Error, the list is empty\n");
         return;
     } else {
-        Cellule *curr = L->first;
+        Cellule_D *curr = L->first->data.first;
         while (curr != NULL) {
             printf(" (%d, %d, %d) , ", curr->li, curr->col, curr->el);
             curr = curr->suiv;
@@ -141,9 +165,40 @@ void afficher_liste(Liste *L) {
 
 }
 
-/*Function that creates a disjunction for each cell (and returns a Liste of clauses (ie list of list of cells)*/
-Liste_Clause2* construct_clause (Liste *L){
-    //L is the list of the elements already defined in the grid
+
+/*Function which determines if an element is already in the line, column or region specified, returns 1 if the number in in LCR, 0 else*/
+int is_number_in_lcr (int li, int col, int el, int reg, Liste_C *Grid) {
+    // create a cell with the possible element
+    Cellule_D *new_cell = malloc(sizeof(Cellule_D));
+    new_cell->col = col;
+    new_cell->li = li;
+    new_cell->el = el;
+    new_cell->reg = reg;
+    new_cell->suiv = NULL;
+
+    for (Cellule_C *curr = Grid->first; curr != NULL; curr = curr->suiv) { // for each element in the Grid
+        Cellule_D * cell_to_compare = curr->data.first; 
+        if (new_cell == cell_to_compare) { // if both cells are the same then the number is already present in either the line, column or region
+            return 1; 
+        }
+    }
+    return 0;
+}
+
+
+/*Function that creates a disjunction for each cell (and returns a Liste_ of disjunctions (ie list of list of cells)*/
+Liste_C* construct_clause (Liste_C *L){
+    //L is the list of the elements already defined in the grid 
+    Liste_C *clause = init_empty_clause();
+    for (Cellule_C* curr = L->first; curr != NULL; curr = curr->suiv) { // for each cell in the sudoku
+        if (curr->data.first->el == 0) { // if the element is unknown (i.e: el = 0), then we enumerate all the possibilities of numbers in this cell by creating a disjunction
+            for (int i = 1; i<=L->first->data.size_grid; i++) { //
+                if (is_number_in_lcr(curr->data.first->li, curr->data.first->col, i, curr->data.first->reg, L)) {
+
+                }
+            }
+        }
+    }
     
 }
 
@@ -170,13 +225,13 @@ void create_dimacs (Liste_Clause2 LC, char* file_name) {
 
         for (int i=1; current_clause != NULL && i<=LC.size; i++){
         //i is the number of the clause we're treating 
-        if (current_clause->clause.first == NULL) {
+        if (current_clause->disjunction.first == NULL) {
             printf("Error, the clause is empty\n");
             fclose(f);
             return;
         } else {
-            Cellule2 *current_cell = current_clause->clause.first;
-            for (int j=1; current_cell != NULL && j <=current_clause->clause.size; j++) {
+            Cellule2 *current_cell = current_clause->disjunction.first;
+            for (int j=1; current_cell != NULL && j <=current_clause->disjunction.size; j++) {
                 //j goes from 1 to the size of the clause (nb of variables)
             
                 fprintf (f,"%d ",current_cell->var);
