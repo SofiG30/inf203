@@ -21,6 +21,7 @@ int main(int argc, char *argv[]) {
     afficher_liste(Grid);
     printf("Length of grid list: %d, Length of Se list: %d\n", Grid->first->data.length, Se->first->data.size_grid);
 
+    // TEST DE LA FONCTION is_number_in_lcr
 
     Liste_D *dis = init_liste(); // Assuming init_liste initializes a Liste_D properly
     Cellule_D *cell = malloc(sizeof(Cellule_D));
