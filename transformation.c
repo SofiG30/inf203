@@ -1,37 +1,21 @@
 #include "transformation.h"
+#include "types.h"
+#include "dict.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
-Liste* init_liste() {    
-    Liste *new_list = malloc(sizeof(Liste));
-    new_list->first = NULL;
-    new_list->last = NULL;
-    new_list->size = 0;
-    return new_list;
-}
 
-void add_cell(Liste *L, Cellule *c) {
 
-    if (L->first == NULL) {
-        L->first = c;
-        L->last = c;
-        L->size = 1;
-    } else {
-        L->last->suiv = c;
-        L->last = L->last->suiv;
-        L->size = L->size + 1;
-    }
-}
-
-void add_regions(Liste *Grid, Liste *Se) {
+void add_regions(Liste_D *Grid, Liste_D *Se) {
 
     if ( Se->first == NULL && Grid->first == NULL) {
         printf("Error, a list is empty\n");
         return;
     }
 
-    Cellule *curr_Grid = Grid->first;
-    Cellule *curr = Se->first;
+    Cellule_D *curr_Grid = Grid->first;
+    Cellule_D *curr = Se->first;
     while (curr != NULL && curr_Grid != NULL) {
        // printf("col grid %d",curr_Grid->col);
        // printf("line grid %d",curr_Grid->li);
@@ -52,9 +36,10 @@ void add_regions(Liste *Grid, Liste *Se) {
     }
 }
 
+
 // Precondition : le fichier doit etre ouvert en mode lecture
-Liste* read_sudoku(FILE *f, Liste *Grid) {
-    Liste *Se = init_liste();
+Liste_D* read_sudoku(FILE *f, Liste_D *Grid) {
+    Liste_D *Se = init_liste();
     if ( f == NULL) {
         printf("Erreur dans le pointeur du fichier\n");
     } else {
@@ -82,7 +67,7 @@ Liste* read_sudoku(FILE *f, Liste *Grid) {
                 default:
                     if (isdigit(val)) {
                         // A value already in the grid 
-                        Cellule *new_cell = malloc(sizeof(Cellule));
+                        Cellule_D *new_cell = malloc(sizeof(Cellule_D));
                         new_cell->col = j;
                         new_cell->li = i;
                         new_cell->el = atoi(&val);
@@ -100,7 +85,7 @@ Liste* read_sudoku(FILE *f, Liste *Grid) {
         while (fscanf(f, " %c", &val) != EOF) {
             if (val != '\\') {  
             //printf(" val  = %c" , val);
-            Cellule *new_cell = malloc(sizeof(Cellule));
+            Cellule_D *new_cell = malloc(sizeof(Cellule_D));
             new_cell->col = j;
            // printf(" line = %d, col = %d", i, j);
             new_cell->li = i;
@@ -124,16 +109,16 @@ Liste* read_sudoku(FILE *f, Liste *Grid) {
 
 }
 
- 
-void afficher_liste(Liste *L) {
+
+void afficher_liste(Liste_D *L) {
 
     if (L->first == NULL) {
         printf("Error, the list is empty\n");
         return;
     } else {
-        Cellule *curr = L->first;
+        Cellule_D *curr = L->first;
         while (curr != NULL) {
-            printf(" (%d, %d, %d) , ", curr->li, curr->col, curr->el);
+            printf(" (%d, %d, %d, %d) , ", curr->li, curr->col, curr->el, curr->reg);
             curr = curr->suiv;
         }
     } 
@@ -141,16 +126,13 @@ void afficher_liste(Liste *L) {
 
 }
 
-/*Function that creates a disjunction for each cell (and returns a Liste of clauses (ie list of list of cells)*/
-Liste_Clause2* construct_clause (Liste *L){
-    //L is the list of the elements already defined in the grid
-    
-}
 
 
-/* Function which takes the clause list as an argument and writes the DIMACS file 
+
+
+/*1. Function which takes the clause list as an argument and writes the DIMACS file 
 (this list will have already been transformed into x’s with readable indices: x1, x2, x3,….)*/
-void create_dimacs (Liste_Clause2 LC, char* file_name) {
+void create_dimacs (Liste_Di_2 *LC, char* file_name) {
 
     FILE*f=fopen(file_name,"w");
     if (f==NULL){
@@ -158,24 +140,24 @@ void create_dimacs (Liste_Clause2 LC, char* file_name) {
     }
 
     //Write the DIMACS file
-    fprintf (f,"p cnf %d %d\n",LC.nb_var,LC.size);
+    fprintf (f,"p cnf %d %d\n",LC->nb_var, LC->size);
     
     //Parcours de tous les éléments 
-    if (LC.first == NULL) {
-        printf("Error, the list is empty\n");
+    if (LC->first == NULL) {
+        printf("Erreur, la liste est vide\n");
         fclose(f);
         return;
     } else {
-        Cellule_Clause2 *current_clause = LC.first;
+        Cellule_Di_2 *current_clause = LC->first;
 
-        for (int i=1; current_clause != NULL && i<=LC.size; i++){
+        for (int i=1; current_clause != NULL && i<=LC->size; i++){
         //i is the number of the clause we're treating 
         if (current_clause->clause.first == NULL) {
             printf("Error, the clause is empty\n");
             fclose(f);
             return;
         } else {
-            Cellule2 *current_cell = current_clause->clause.first;
+            Cell_Di *current_cell = current_clause->clause.first;
             for (int j=1; current_cell != NULL && j <=current_clause->clause.size; j++) {
                 //j goes from 1 to the size of the clause (nb of variables)
             
@@ -195,3 +177,51 @@ void create_dimacs (Liste_Clause2 LC, char* file_name) {
     fclose(f);
 
 }
+
+
+
+Liste_Di_2* rewrite_var(Liste_C *L) {
+
+    Liste_Di_2 *new_list = init_listeDi_2();
+    dictionary *D = init_dict();
+    
+
+    if (L->first == NULL) {
+        printf("Error, the list is empty\n");
+        return new_list;
+    }
+
+    int variable = 1;
+    Cellule_C *curr = L->first;
+    while (curr != NULL) {
+        Liste_Di *clause = init_liste_Di();
+        if (curr->data->first == NULL) {
+            printf("Error, the list is empty\n");
+            return new_list;
+        } 
+        clause->size = curr->data->length;
+        Cellule_D *curr_elem = curr->data->first;
+        while (curr_elem !=  NULL) {
+            /* Error here / Logic of searching in the dict is not correct*/
+            // Check the var is not already in dict
+            int curr_key = get_key(D, curr_elem); 
+            if (curr_key != 0) {
+                // The value is already in the dict
+                add_cell_Di(clause, curr_key);
+            } else {
+                add_cell_Di(clause, variable);
+                add_key(D,variable, curr_elem);
+                variable++;           
+            }
+
+            curr_elem = curr_elem->suiv;
+        }
+        // Add the clause to the list of clauses
+        add_liste( clause, new_list);
+        curr = curr->suiv;
+    }
+    return new_list;
+}
+
+
+
