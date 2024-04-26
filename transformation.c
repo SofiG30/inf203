@@ -110,6 +110,117 @@ Liste_D* read_sudoku(FILE *f, Liste_D *Grid) {
 }
 
 
+void afficher_liste_D(Liste_D *L) {
+
+    if (L->first == NULL) {
+        printf("Error, the list is empty\n");
+        return;
+    } else {
+        Cellule_D *curr = L->first;
+        while (curr != NULL) {
+            printf(" (%d, %d, %d) , ", curr->li, curr->col, curr->el);
+            curr = curr->suiv;
+        }
+    } 
+    printf("\n");
+
+}
+
+
+void afficher_liste_C(Liste_C *L) {
+
+    if (L->first == NULL) {
+        printf("Error, the list is empty\n");
+        return;
+    } else {
+        Cellule_C *curr = L->first;
+        while (curr != NULL) {
+            if (curr->data.first != NULL) {
+                printf("(%d, %d, %d) , ", curr->data.first->li, curr->data.first->col, curr->data.first->el);
+            } else {
+                printf("NULL"); // Handle case where curr->data.first is NULL
+            }
+            curr = curr->suiv;
+        }
+    }
+    printf("\n");
+
+}
+
+
+bool is_number_in_lcr (Cellule_D *cell, Liste_D *Grid) {
+    
+
+
+    // VERIFY THE NUMBER IS NOT PRESENT ON THE SAME LINE
+    for (int i = 1; i <= Grid->size_grid; i++) {
+        cell->col = i;
+        printf("col: %d, li: %d, el: %d\n", i, cell->li, cell->el);
+
+        Cellule_D *curr = Grid->first;
+        while (curr != NULL) {
+            if (curr->li == cell->li && curr->el == cell->el) {
+                return true;
+            }
+            curr = curr->suiv;
+        }
+    }
+
+    // VERIFY THE NUMBER IS NOT PRESENT IN THE SAME COLUMN
+    for (int i = 1; i <= Grid->size_grid; i++) {
+        cell->li = i;
+        printf("col: %d, li: %d, el: %d\n", cell->col, cell->li, cell->el);
+        
+        Cellule_D *curr = Grid->first;
+        while (curr != NULL) {
+            if (curr->li == cell->col && curr->el == cell->el) {
+                return true;
+            }
+            curr = curr->suiv;
+        }
+    }
+
+    // VERIFY THE NUMBER IS NOT PRESENT IN THE SAME REGION
+    for (int i = 1; i <= Grid->size_grid; i++) {
+        cell->reg = i;
+        printf("col: %d, li: %d, el: %d\n", cell->col, cell->li, cell->el);
+        Cellule_D *curr = Grid->first;
+        while (curr != NULL) {
+            if (curr->reg == cell->li && curr->el == cell->el) {
+                printf("true\n");
+                return true;
+            }
+            curr = curr->suiv;
+        }
+    }
+
+    return false;
+}
+
+
+/*Function that creates a disjunction for each cell (and returns a Liste_D of clauses (ie list of list of cells)*/
+Liste_C* construct_clause (Liste_D *L){
+    //L is the list of the elements already defined in the grid
+    Liste_C *clause = init_empty_clause();
+    Liste_D *disjunction = init_liste();
+    for (Cellule_D *curr = L->first; curr != NULL; curr = curr->suiv) {
+        if (curr->el == 0) { // if the element is unknown (i.e the cell is empty)
+            for (int i = 1; i <= L->size_grid; i++) {
+                curr->el = i;    
+                if (is_number_in_lcr(curr, L) == false) { // if the number is not present on the line, column, or region then add it to the clause
+                    add_cell_D(disjunction, curr);
+                    Cellule_C *cell_clause = malloc(sizeof(Cellule_C));
+                    cell_clause->data = *disjunction;
+                    cell_clause->suiv = NULL;
+                    add_cell_C(clause, cell_clause);
+                }
+            }
+        }
+    }
+    return clause;
+}
+
+
 void afficher_liste(Liste_D *L) {
 
     if (L->first == NULL) {
@@ -125,9 +236,6 @@ void afficher_liste(Liste_D *L) {
     printf("\n");
 
 }
-
-
-
 
 
 /*1. Function which takes the clause list as an argument and writes the DIMACS file 
