@@ -4,14 +4,6 @@
 #include "types.h"
           
 
-Liste_D* init_liste();
-
-Liste_C* init_empty_clause();
-
-void add_cell_D(Liste_D *L, Cellule_D *c) ;
-
-void add_cell_C(Liste_C *L, Cellule_C *c);
-
 // Reads an instance of a sudoku file
 Liste_D* read_sudoku (FILE *f, Liste_D *Grid);
 
