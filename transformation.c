@@ -201,7 +201,7 @@ bool is_number_in_lcr (Cellule_D *cell, Liste_D *Grid) {
 /*Function that creates a disjunction for each cell (and returns a Liste_D of clauses (ie list of list of cells)*/
 Liste_C* construct_clause (Liste_D *L){
     //L is the list of the elements already defined in the grid
-    Liste_C *clause = init_empty_clause();
+    Liste_C *clause = init_listeClause();
     Liste_D *disjunction = init_liste();
     for (Cellule_D *curr = L->first; curr != NULL; curr = curr->suiv) {
         if (curr->el == 0) { // if the element is unknown (i.e the cell is empty)
