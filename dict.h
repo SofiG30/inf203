@@ -6,19 +6,6 @@
 #include "transformation.h"
 
 
-typedef struct cell_dict {
-    int key; // Variable
-    Cellule_D *c; 
-    struct cell_dict *next;   
-} cell_dict;
-
-typedef struct dictionary {
-    cell_dict *head;
-    cell_dict *tail;
-    int nb_keys;
-} dictionary;
-
-
 dictionary* init_dict();
 
 void detruire_dict(dictionary *D);
@@ -26,9 +13,9 @@ void detruire_dict(dictionary *D);
 // Functions that use the dict type
 cell_dict* find_relation(dictionary *D, int key);
 
-int get_key(dictionary *D, Cellule_D *c) 
-
 Cellule_D* get_value(dictionary *D, int key);
+
+int get_key(dictionary *D, Cellule_D *c);
 
 void add_key(dictionary *D, int key, Cellule_D *Value);
 
