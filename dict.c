@@ -60,7 +60,6 @@ Cellule_D* get_value(dictionary *D, int key) {
     return cell->c;
 }
 
-
 int get_key(dictionary *D, Cellule_D *c) {
     if (D->head == NULL) {
        printf("Error, the dictionary is empty\n");
