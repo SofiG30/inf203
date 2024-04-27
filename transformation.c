@@ -136,7 +136,9 @@ void afficher_liste_C(Liste_C *L) {
         Cellule_C *curr = L->first;
         while (curr != NULL) {
             if (curr->data.first != NULL) {
-                printf("(%d, %d, %d) , ", curr->data.first->li, curr->data.first->col, curr->data.first->el);
+                for (Cellule_D *c = curr->data.first; c != NULL; c = c->suiv) {
+                    printf("(%d, %d, %d) , ", c->li, c->col, c->el);
+                }
             } else {
                 printf("NULL"); // Handle case where curr->data.first is NULL
             }
