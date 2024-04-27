@@ -72,7 +72,7 @@ Liste_D* read_sudoku(FILE *f, Liste_D *Grid) {
                         new_cell->li = i;
                         new_cell->el = atoi(&val);
                         new_cell->suiv = NULL;
-                        add_cell(Se, new_cell);
+                        add_cell_D(Se, new_cell);
                         j++;
                     }
                     break;
@@ -93,7 +93,7 @@ Liste_D* read_sudoku(FILE *f, Liste_D *Grid) {
             //printf(" reg = %d\n", new_cell->reg);
             new_cell->el = 0;
             new_cell->suiv = NULL;
-            add_cell(Grid, new_cell);
+            add_cell_D(Grid, new_cell);
             j++;
         } else {
             i++;
@@ -113,7 +113,7 @@ Liste_D* read_sudoku(FILE *f, Liste_D *Grid) {
 void afficher_liste_D(Liste_D *L) {
 
     if (L->first == NULL) {
-        printf("Error, the list is empty\n");
+        printf("Error in afficher_liste_D, the list is empty\n");
         return;
     } else {
         Cellule_D *curr = L->first;
@@ -130,15 +130,13 @@ void afficher_liste_D(Liste_D *L) {
 void afficher_liste_C(Liste_C *L) {
 
     if (L->first == NULL) {
-        printf("Error, the list is empty\n");
+        printf("Error in afficher_liste_C, the list is empty\n");
         return;
     } else {
         Cellule_C *curr = L->first;
         while (curr != NULL) {
-            if (curr->data.first != NULL) {
-                for (Cellule_D *c = curr->data.first; c != NULL; c = c->suiv) {
-                    printf("(%d, %d, %d) , ", c->li, c->col, c->el);
-                }
+            if (curr->data->first != NULL) {
+                printf("(%d, %d, %d) , ", curr->data->first->li, curr->data->first->col, curr->data->first->el);
             } else {
                 printf("NULL"); // Handle case where curr->data.first is NULL
             }
@@ -205,18 +203,27 @@ Liste_C* construct_clause (Liste_D *L){
     //L is the list of the elements already defined in the grid
     Liste_C *clause = init_listeClause();
     Liste_D *disjunction = init_liste();
+    //go through all elements of L
     for (Cellule_D *curr = L->first; curr != NULL; curr = curr->suiv) {
         if (curr->el == 0) { // if the element is unknown (i.e the cell is empty)
             for (int i = 1; i <= L->size_grid; i++) {
                 curr->el = i;    
-                if (is_number_in_lcr(curr, L) == false) { // if the number is not present on the line, column, or region then add it to the clause
+                if (is_number_in_lcr(curr, L) == false) { 
+                    // if the number is not present on the line, column, or region then add it to the disjunction
+                    add_cell_D(disjunction, curr);  
+                } else {
+                    //the number is present on the line or the column or the region 
+                    //we negate the element (means that the variable is negated) and add it to the disjunction
+                    curr->el = 0-curr->el;
                     add_cell_D(disjunction, curr);
-                    Cellule_C *cell_clause = malloc(sizeof(Cellule_C));
-                    cell_clause->data = *disjunction;
-                    cell_clause->suiv = NULL;
-                    add_cell_C(clause, cell_clause);
                 }
+                
             }
+            //once the disjunction "full" (for this cell all the possibilities) we add it to the list of clauses
+            Cellule_C *cell_clause = malloc(sizeof(Cellule_C));
+            cell_clause->data = disjunction;
+            cell_clause->suiv = NULL;
+            add_cell_C(clause, cell_clause);
         }
     }
     return clause;
@@ -226,7 +233,7 @@ Liste_C* construct_clause (Liste_D *L){
 void afficher_liste(Liste_D *L) {
 
     if (L->first == NULL) {
-        printf("Error, the list is empty\n");
+        printf(" empty\n");
         return;
     } else {
         Cellule_D *curr = L->first;
@@ -297,7 +304,7 @@ Liste_Di_2* rewrite_var(Liste_C *L) {
     
 
     if (L->first == NULL) {
-        printf("Error, the list is empty\n");
+        printf("Error in rewrite_var, the list L is empty\n");
         return new_list;
     }
 
@@ -306,7 +313,7 @@ Liste_Di_2* rewrite_var(Liste_C *L) {
     while (curr != NULL) {
         Liste_Di *clause = init_liste_Di();
         if (curr->data->first == NULL) {
-            printf("Error, the list is empty\n");
+            printf("Error in rewrite_var, the list clause is empty\n");
             return new_list;
         } 
         clause->size = curr->data->length;
@@ -342,18 +349,18 @@ void give_solution (FILE *ans_sat, dictionary *D){
     } else {
         
         // Satisfiability
-        char[6] is_sat; //it will be SAT or UNSAT (max 5 characters)
+        char is_sat[6]; //it will be SAT or UNSAT (max 5 characters)
         int var;
 
         fscanf(ans_sat, "%s", is_sat);
-        if (is_sat == "SAT"){
-            fscanf(ans_sat, " %c", var);
+        if (strcmp(is_sat, "SAT") == 0){
+            fscanf(ans_sat, " %d", &var);
             while (var != 0){
                 /*we are only interested in the variables that are positive (i.e which are true)
                 they gives which combination of line, col, region and element is true*/
                 cell_dict *cell_d = find_relation(D, var);
                 
-                fscanf(ans_sat, " %c", var);
+                fscanf(ans_sat, " %d", &var);
             }
 
         } else {
