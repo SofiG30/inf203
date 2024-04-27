@@ -69,6 +69,23 @@ typedef struct Liste_Clause2_ {
 	                       
 } Liste_Di_2;
 
+
+//Def of the dictionaries
+typedef struct cell_dict {
+    int key; // Variable
+    Cellule_D *c; 
+    struct cell_dict *next;   
+} cell_dict;
+
+typedef struct dictionary {
+    cell_dict *head;
+    cell_dict *tail;
+    int nb_keys;
+} dictionary;
+
+
+
+
 // Auxiliary functions
 Liste_D* init_liste();
 
