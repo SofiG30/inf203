@@ -4,6 +4,7 @@
 #include "types.h"
 #include "transformation.h"
 
+//only 1 argument: sudoku_file.txt 
 int main(int argc, char *argv[]) {
     
     if (argc < 2) {
@@ -16,9 +17,18 @@ int main(int argc, char *argv[]) {
         printf("Error while opening the file\n");
         return 1;
     }
+
+    Liste_D *Grid = init_liste();
+    if ( f == NULL) {
+        printf("Erreur dans le pointeur du fichier\n");
+    }
     
-    Liste *Se = read_sudoku(f);
-    afficher_liste(Se);
+    Liste_D *Se = read_sudoku(f, Grid);
+
+    /*Function that creates a disjunction for each cell (and returns a Liste_D of clauses (ie list of list of cells)*/
+    Liste_C *clause = construct_clause (Se);
+
+    afficher_liste_C(clause);
 
     /* Test for rewrite_var function
  
