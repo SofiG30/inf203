@@ -28,6 +28,7 @@ void add_cell_D(Liste_D *L, Cellule_D *c) {
 
 void add_cell_C(Liste_C *L, Cellule_C *c) {
     if (L == NULL || c == NULL) {
+        printf("L or c is empty so no")
         return;
     }
 
