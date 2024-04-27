@@ -60,6 +60,24 @@ Cellule_D* get_value(dictionary *D, int key) {
     return cell->c;
 }
 
+
+int get_key(dictionary *D, Cellule_D *c) {
+    if (D->head == NULL) {
+       printf("Error, the dictionary is empty\n");
+       return 0; // pas de key
+    }
+
+    cell_dict *current = D->head;
+    while (current != NULL) {
+        if ((current->c->col == c->col) && (current->c->el == c->el) && (current->c->li == c->li) && (current->c->reg && c->reg)) {
+            return current->key;
+        }
+        current = current->next;
+    }
+    return 0; //le key n'hexiste pas
+
+}
+
 void add_key(dictionary *D, int key, Cellule_D *Value) {
 
     cell_dict *new_cell = malloc(sizeof(cell_dict));
