@@ -53,6 +53,7 @@ cell_dict* find_relation(dictionary *D, int key) {
 Cellule_D* get_value(dictionary *D, int key) {
 
     if (D->head == NULL) {
+        printf("Error, the dictionary is empty\n");
         return NULL;
     }
     cell_dict *cell = find_relation(D, key);
@@ -62,7 +63,8 @@ Cellule_D* get_value(dictionary *D, int key) {
 
 int get_key(dictionary *D, Cellule_D *c) {
     if (D->head == NULL) {
-        return 0; // pas de key
+       printf("Error, the dictionary is empty\n");
+       return 0; // pas de key
     }
 
     cell_dict *current = D->head;
@@ -97,5 +99,4 @@ void add_key(dictionary *D, int key, Cellule_D *Value) {
             cell->c = Value;
         }
     }
-   // printf("value key = %d\n" , D->nb_keys);
 }

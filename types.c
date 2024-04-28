@@ -42,7 +42,7 @@ void add_cell_C(Liste_C *L, Cellule_C *c) {
     }
 }
 
-Liste_C* init_empty_clause() {
+Liste_C* init_listeClause() {
     Liste_C *L = malloc(sizeof(Liste_C));
     L->size = 0;
     L->first = NULL;
@@ -51,38 +51,6 @@ Liste_C* init_empty_clause() {
 }
 
 
-void afficher_liste_D(Liste_D *L) {
-
-    if (L->first == NULL) {
-       // printf("Error, the list is empty\n");
-        return;
-    } else {
-        Cellule_D *curr = L->first;
-        while (curr != NULL) {
-            printf(" (%d, %d, %d, %d) , ", curr->li, curr->col, curr->el, curr->reg);
-            curr = curr->suiv;
-        }
-    } 
-    printf("\n");
-
-}
-
-
-void afficher_liste_C(Liste_C *L) {
-    
-    if (L->first == NULL) {
-        printf("Error, the list is empty\n");
-        return;
-    } else {
-        Cellule_C *curr = L->first;
-        while (curr != NULL) {
-            afficher_liste_D(curr->data);
-            curr = curr->suiv;
-        }
-    }
-    printf("\n");
-
-}
 
 Liste_Di_2* init_listeDi_2() {
     Liste_Di_2 *List = malloc(sizeof(List));

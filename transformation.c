@@ -1,6 +1,6 @@
 #include "transformation.h"
 #include "types.h"
-#include <string.h>
+#include "dict.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -72,7 +72,7 @@ Liste_D* read_sudoku(FILE *f, Liste_D *Grid) {
                         new_cell->li = i;
                         new_cell->el = atoi(&val);
                         new_cell->suiv = NULL;
-                        add_cell_D(Se, new_cell);
+                        add_cell(Se, new_cell);
                         j++;
                     }
                     break;
@@ -93,7 +93,7 @@ Liste_D* read_sudoku(FILE *f, Liste_D *Grid) {
             //printf(" reg = %d\n", new_cell->reg);
             new_cell->el = 0;
             new_cell->suiv = NULL;
-            add_cell_D(Grid, new_cell);
+            add_cell(Grid, new_cell);
             j++;
         } else {
             i++;
@@ -110,109 +110,139 @@ Liste_D* read_sudoku(FILE *f, Liste_D *Grid) {
 }
 
 
-
-/*Function that creates a disjunction for each cell (and returns a Liste_D of clauses (ie list of list of cells)*/
-Liste_C* positive_clauses (Liste_D *L, Liste_D *Se){
-    //L is the list that represents the Grid
-    Liste_C *clause = init_empty_clause();
+void afficher_liste_D(Liste_D *L) {
 
     if (L->first == NULL) {
         printf("Error, the list is empty\n");
-        return clause;
+        return;
+    } else {
+        Cellule_D *curr = L->first;
+        while (curr != NULL) {
+            printf(" (%d, %d, %d) , ", curr->li, curr->col, curr->el);
+            curr = curr->suiv;
+        }
+    } 
+    printf("\n");
+
+}
+
+
+void afficher_liste_C(Liste_C *L) {
+
+    if (L->first == NULL) {
+        printf("Error, the list is empty\n");
+        return;
+    } else {
+        Cellule_C *curr = L->first;
+        while (curr != NULL) {
+            if (curr->data.first != NULL) {
+                for (Cellule_D *c = curr->data.first; c != NULL; c = c->suiv) {
+                    printf("(%d, %d, %d) , ", c->li, c->col, c->el);
+                }
+            } else {
+                printf("NULL"); // Handle case where curr->data.first is NULL
+            }
+            curr = curr->suiv;
+        }
+    }
+    printf("\n");
+
+}
+
+
+bool is_number_in_lcr (Cellule_D *cell, Liste_D *Grid) {
+    
+
+
+    // VERIFY THE NUMBER IS NOT PRESENT ON THE SAME LINE
+    for (int i = 1; i <= Grid->size_grid; i++) {
+        cell->col = i;
+        printf("col: %d, li: %d, el: %d\n", i, cell->li, cell->el);
+
+        Cellule_D *curr = Grid->first;
+        while (curr != NULL) {
+            if (curr->li == cell->li && curr->el == cell->el) {
+                return true;
+            }
+            curr = curr->suiv;
+        }
     }
 
-    Cellule_D *curr = L->first;
-    while (curr != NULL) {
-        Liste_D *literal = init_liste();
+    // VERIFY THE NUMBER IS NOT PRESENT IN THE SAME COLUMN
+    for (int i = 1; i <= Grid->size_grid; i++) {
+        cell->li = i;
+        printf("col: %d, li: %d, el: %d\n", cell->col, cell->li, cell->el);
+        
+        Cellule_D *curr = Grid->first;
+        while (curr != NULL) {
+            if (curr->li == cell->col && curr->el == cell->el) {
+                return true;
+            }
+            curr = curr->suiv;
+        }
+    }
+
+    // VERIFY THE NUMBER IS NOT PRESENT IN THE SAME REGION
+    for (int i = 1; i <= Grid->size_grid; i++) {
+        cell->reg = i;
+        printf("col: %d, li: %d, el: %d\n", cell->col, cell->li, cell->el);
+        Cellule_D *curr = Grid->first;
+        while (curr != NULL) {
+            if (curr->reg == cell->li && curr->el == cell->el) {
+                printf("true\n");
+                return true;
+            }
+            curr = curr->suiv;
+        }
+    }
+
+    return false;
+}
+
+
+/*Function that creates a disjunction for each cell (and returns a Liste_D of clauses (ie list of list of cells)*/
+Liste_C* construct_clause (Liste_D *L){
+    //L is the list of the elements already defined in the grid
+    Liste_C *clause = init_listeClause();
+    Liste_D *disjunction = init_liste();
+    for (Cellule_D *curr = L->first; curr != NULL; curr = curr->suiv) {
         if (curr->el == 0) { // if the element is unknown (i.e the cell is empty)
             for (int i = 1; i <= L->size_grid; i++) {
-                Cellule_D *tmp = malloc(sizeof(Cellule_D)); // Allocate memory for tmp
-                tmp->li = curr->li;
-                tmp->col = curr->col;
-                tmp->el = i;  
-                tmp->reg = curr->reg;
-                if (!is_number_in_lcr(tmp,L)) { 
-                    // if the number is not present on the line, column, or region then add it to the clause
-                    add_cell_D(literal, tmp);
+                curr->el = i;    
+                if (is_number_in_lcr(curr, L) == false) { // if the number is not present on the line, column, or region then add it to the clause
+                    add_cell_D(disjunction, curr);
+                    Cellule_C *cell_clause = malloc(sizeof(Cellule_C));
+                    cell_clause->data = *disjunction;
+                    cell_clause->suiv = NULL;
+                    add_cell_C(clause, cell_clause);
                 }
-            
             }
-        } 
-        Cellule_C *new_cell = malloc(sizeof(Cellule_C));
-        new_cell->data = literal;
-        new_cell->suiv = NULL;
-        add_cell_C(clause, new_cell);
-        curr = curr->suiv;
-   
+        }
     }
-
-    Cellule_D *curr_Se;    
-    for (curr_Se = Se->first; curr_Se != NULL; curr_Se = curr_Se->suiv) {
-    // Allocate memory for a new list and a new cell
-    Liste_D *new_list = malloc(sizeof(Liste_D));
-    Cellule_C *new_cell = malloc(sizeof(Cellule_C));
-
-    Cellule_D *tmp = malloc(sizeof(Cellule_D)); // Allocate memory for tmp
-    tmp->col = curr_Se->col;
-    tmp->li = curr_Se->li;
-    tmp->reg = curr_Se->reg;
-    tmp->el = curr_Se->el;
-    add_cell_D(new_list, tmp);   
-   
-    
-    // Initialize the new cell
-    new_cell->data = new_list;
-    new_cell->suiv = NULL;
-    
-    // Add the new cell to the clause list
-    add_cell_C(clause, new_cell);
-}
     return clause;
 }
 
 
-
-
-Liste_C* construct_clause_neg (Liste_C *L, Liste_D *Se) {
-
-    Liste_C *neg_clauses = init_empty_clause();
+void afficher_liste(Liste_D *L) {
 
     if (L->first == NULL) {
-        printf("Error, no clauses are on the list\n");
-        return neg_clauses;
-    }
+        printf("Error, the list is empty\n");
+        return;
+    } else {
+        Cellule_D *curr = L->first;
+        while (curr != NULL) {
+            printf(" (%d, %d, %d, %d) , ", curr->li, curr->col, curr->el, curr->reg);
+            curr = curr->suiv;
+        }
+    } 
+    printf("\n");
 
-    int grid_size = Se->size_grid;
-
-    for (int i = 1; i <= grid_size; i++) {
-        // This list will have all cells with pos value i
-        Liste_D *List = extract_list(L,Se,i);
-        while (List->length >= 2) {
-            Cellule_D *curr = pop_cell(List);
-            Cellule_D *cell_l = List->first;
-            while (cell_l != NULL) {
-                if ( same_lcr(curr, cell_l) == true) {
-                    Liste_D *literal = init_liste();
-                    add_cell_D(literal, curr);
-                    add_cell_D(literal, cell_l);
-                    Cellule_C *new_clause = malloc(sizeof(Cellule_C));
-                    new_clause->data = literal;
-                    new_clause->suiv = NULL;
-                    add_cell_C(neg_clauses, new_clause);
-                }
-                cell_l = cell_l->suiv;
-            }
-            cell_l = List->first;
-        }    
-    }
-    return neg_clauses;
 }
-
 
 
 /*1. Function which takes the clause list as an argument and writes the DIMACS file 
 (this list will have already been transformed into x’s with readable indices: x1, x2, x3,….)*/
-void create_dimacs (Liste_Di_2 *Pos_clauses, Liste_Di_2 *Neg_clauses, char* file_name) {
+void create_dimacs (Liste_Di_2 *LC, char* file_name) {
 
     FILE*f=fopen(file_name,"w");
     if (f==NULL){
@@ -220,20 +250,17 @@ void create_dimacs (Liste_Di_2 *Pos_clauses, Liste_Di_2 *Neg_clauses, char* file
     }
 
     //Write the DIMACS file
-    // The number of var doesnt change
-    
-    fprintf (f,"p cnf %d %d\n", Pos_clauses->nb_var, (Pos_clauses->size + Neg_clauses->size));
+    fprintf (f,"p cnf %d %d\n",LC->nb_var, LC->size);
     
     //Parcours de tous les éléments 
-    if (Pos_clauses->first == NULL || Neg_clauses->first == NULL) {
+    if (LC->first == NULL) {
         printf("Erreur, la liste est vide\n");
         fclose(f);
         return;
     } else {
-         // We start by the pos clauses
-        Cellule_Di_2 *current_clause = Pos_clauses->first;
+        Cellule_Di_2 *current_clause = LC->first;
 
-        for (int i=1; current_clause != NULL && i<=Pos_clauses->size; i++){
+        for (int i=1; current_clause != NULL && i<=LC->size; i++){
         //i is the number of the clause we're treating 
         if (current_clause->clause.first == NULL) {
             printf("Error, the clause is empty\n");
@@ -255,31 +282,6 @@ void create_dimacs (Liste_Di_2 *Pos_clauses, Liste_Di_2 *Neg_clauses, char* file
             //we go back in the loop but for the next clause until there is no more clauses to be treated
         }
         }   
-        // Negative clauses
-        current_clause = Neg_clauses->first;
-
-        for (int i=1; current_clause != NULL && i<=Neg_clauses->size; i++){
-        //i is the number of the clause we're treating 
-        if (current_clause->clause.first == NULL) {
-            printf("Error, the clause is empty\n");
-            fclose(f);
-            return;
-        } else {
-            Cell_Di *current_cell = current_clause->clause.first;
-            for (int j=1; current_cell != NULL && j <=current_clause->clause.size; j++) {
-                //j goes from 1 to the size of the clause (nb of variables)
-            
-                fprintf (f,"-%d ",current_cell->var);
-
-                current_cell = current_cell->suiv;
-            }
-            //we printed a whole clause
-            fprintf (f,"0\n");
-
-           current_clause = current_clause->suiv;
-            //we go back in the loop but for the next clause until there is no more clauses to be treated
-        }
-        }   
     }
     //The DIMACS file is written
     fclose(f);
@@ -288,9 +290,10 @@ void create_dimacs (Liste_Di_2 *Pos_clauses, Liste_Di_2 *Neg_clauses, char* file
 
 
 
-Liste_Di_2* rewrite_var(Liste_C *L, dictionary *D) {
+Liste_Di_2* rewrite_var(Liste_C *L) {
 
     Liste_Di_2 *new_list = init_listeDi_2();
+    dictionary *D = init_dict();
     
 
     if (L->first == NULL) {
@@ -309,6 +312,7 @@ Liste_Di_2* rewrite_var(Liste_C *L, dictionary *D) {
         clause->size = curr->data->length;
         Cellule_D *curr_elem = curr->data->first;
         while (curr_elem !=  NULL) {
+            /* Error here / Logic of searching in the dict is not correct*/
             // Check the var is not already in dict
             int curr_key = get_key(D, curr_elem); 
             if (curr_key != 0) {
@@ -330,11 +334,8 @@ Liste_Di_2* rewrite_var(Liste_C *L, dictionary *D) {
 }
 
 
-
-
-
 //Precondition : the file must be open in lecture mode
-/*void give_solution (FILE *ans_sat, dictionary *D){
+void give_solution (FILE *ans_sat, dictionary *D){
 
     if ( ans_sat == NULL) {
         printf("Erreur dans le pointeur du fichier\n");
@@ -348,8 +349,8 @@ Liste_Di_2* rewrite_var(Liste_C *L, dictionary *D) {
         if (is_sat == "SAT"){
             fscanf(ans_sat, " %c", var);
             while (var != 0){
-                we are only interested in the variables that are positive (i.e which are true)
-                they gives which combination of line, col, region and element is true
+                /*we are only interested in the variables that are positive (i.e which are true)
+                they gives which combination of line, col, region and element is true*/
                 cell_dict *cell_d = find_relation(D, var);
                 
                 fscanf(ans_sat, " %c", var);
@@ -361,5 +362,4 @@ Liste_Di_2* rewrite_var(Liste_C *L, dictionary *D) {
         }
     }
 }
-*/
 
