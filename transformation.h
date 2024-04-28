@@ -2,25 +2,29 @@
 #define _TRANSFORMATION_H_
 #include <stdio.h>
 #include "types.h"
+#include "clause.h"
+#include "dict.h"
           
+
+
+
+
+void add_regions(Liste_D *Grid, Liste_D *Se);
 
 // Reads an instance of a sudoku file
 Liste_D* read_sudoku (FILE *f, Liste_D *Grid);
 
-// Function just to verify the list is correctly formed
-void afficher_liste(Liste_D *L);
 
-bool is_number_in_lcr (Cellule_D *cell, Liste_D *Grid);
-
-Liste_C* construct_clause(Liste_D* sudoku);
 // Create the clauses of each case in the grid
-//Liste_C* construct_clause(Liste_D *Se, Liste_D *Grid);
+Liste_C* positive_clauses (Liste_D *L, Liste_D *Se);
 
-Liste_Di_2* rewrite_var(Liste_C *L);
+Liste_C* construct_clause_neg (Liste_C *L, Liste_D *Se);
 
-void create_dimacs (Liste_Di_2* LC, char* file_name);
+// Create the clauses of each case in the grid
+Liste_Di_2* rewrite_var(Liste_C *L, dictionary *D);
 
-void give_solution (FILE *ans_sat, dictionary *D);
+void create_dimacs (Liste_Di_2 *Pos_clauses, Liste_Di_2 *Neg_clauses, char* file_name);
 
+//void give_solution (FILE *ans_sat, dictionary *D);
 
 #endif
