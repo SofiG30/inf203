@@ -76,7 +76,12 @@ void add_cell_D(Liste_D *L, Cellule_D *c) ;
 
 void add_cell_C(Liste_C *L, Cellule_C *c);
 
-Liste_C* init_listeClause();
+Liste_C* init_empty_clause();
+
+// Function just to verify the list is correctly formed
+void afficher_liste_D(Liste_D *L);
+
+void afficher_liste_C(Liste_C *L);
 
 
 // Aux function rewrite_var
