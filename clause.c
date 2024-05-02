@@ -2,6 +2,7 @@
 #include "types.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 
 
@@ -16,7 +17,8 @@ Liste_D* extract_list( Liste_C *L,  Liste_D *Se, int i) {
         Cellule_D *curr_cell = curr_list->data->first;
         while (curr_cell != NULL) {
             if (curr_cell->el == i && in_list(Se, curr_cell) == false) {
-                Cellule_D *tmp = curr_cell;
+                Cellule_D *tmp = malloc(sizeof(Cellule_D));
+                memcpy(tmp, curr_cell, sizeof(Cellule_D));
                 tmp->suiv = NULL;
                 add_cell_D(new_list, tmp);
             }
