@@ -29,23 +29,16 @@ int main(int argc, char *argv[]) {
 
     // We start by reading the sudoku grid
     Se = read_sudoku(f, Grid);
-
-    /*
-    afficher_liste_D(Se);
-    printf("\n\n");
-    afficher_liste_D(Grid);
-    */
-
     // Create the clause lists 
     // Positive 
     pos_cl = positive_clauses(Grid, Se);    
-    //afficher_liste_C(pos_cl);
-
+    afficher_liste_C(pos_cl);
+    //printf("New list -> neg list\n");
     // Negative
     //printf("Error\n");
     neg_cl = construct_clause_neg(pos_cl, Se);  
-    // Works only when the value is 1
-    //afficher_liste_C(pos_cl);
+    // No entiendo por que no funcionaaa
+       //afficher_liste_C(neg_cl);
 
     /*
     // Turn the lists into Di_lists (Only integers represent the cases) + store in dict
