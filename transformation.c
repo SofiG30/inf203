@@ -183,36 +183,62 @@ Liste_C* construct_clause_neg (Liste_C *L, Liste_D *Se) {
     }
 
     int grid_size = Se->size_grid;
-    // The initial list L changes when i increases dk why tho
     for (int i = 1; i <= grid_size; i++) {
         // This list will have all cells with pos value i
         Liste_D *List = extract_list(L,Se,i);
-        //afficher_liste_D(List);
-        //printf("List length = %d\n", List->length);
+       // printf("List length = %d\n", List->length);
         while (List->length >= 2) {
-            // The pop_cell function gives me an infinite loop
             Cellule_D *curr = pop_cell(List);
-            //printf("Cell (%d,%d,%d,%d)", curr->li, curr->col, curr->el, curr->reg);
+           // printf(" cell extracted = %d %d %d\n", curr->li, curr->col, curr->el);
             Cellule_D *cell_l = List->first;
             while (cell_l != NULL) {
-               //  printf("Cell list (%d,%d,%d,%d)\n", cell_l->li, cell_l->col, cell_l->el, cell_l->reg);
+             //   printf("Curr cell %d %d %d\n", cell_l->li, cell_l->col, cell_l->el);
                 if ( same_lcr(curr, cell_l) == true) {
-                    /* the problem is here*/
+                    // here the list is already wrong ??
+                    /*if ( i == 1) {
+                        printf(" List \n");
+                        afficher_liste_C(neg_clauses);
+                        printf("\n");
+                    } */
+                    //printf(" true\n");
                     Liste_D *literal = init_liste();
                     add_cell_D(literal, curr);
 
-                    Cellule_D *new_cell_l = malloc(sizeof(Cellule_D));
-                    memcpy(new_cell_l, cell_l, sizeof(Cellule_D));
-                    new_cell_l->suiv = NULL; // Ensure that the new cell's suiv pointer is NULL
-                    add_cell_D(literal, new_cell_l);
-                    //printf("Liste literal\n");
-                    //afficher_liste_D(literal);
+                    Cellule_D *tmp = malloc(sizeof(Cellule_D));
+                    tmp->col = cell_l->col;
+                    tmp->el = cell_l->el;
+                    tmp->li = cell_l->li;
+                    tmp->reg = cell_l->reg;
+                    tmp->suiv = NULL;
+                    add_cell_D(literal, tmp);
+                    
+                    // error is here -> when changing the cell_l -> modifies the previous cell_l 
+                    // ex  1) (1,2,2,1) , (1,3,1,1)
+                    // when changing cell_l
+                    // 2) (1,2,2,1) , (4,2,1,3)
+                    //    (1,2,2,1) , (4,2,1,3)
+
+                    // But i exxpect 2) (1,2,2,1) , (1,3,1,1)
+                    //                  (1,2,2,1) , (4,2,1,3)
                     Cellule_C *new_clause = malloc(sizeof(Cellule_C));
                     new_clause->data = literal;
                     new_clause->suiv = NULL;
-                    add_cell_C(neg_clauses, new_clause);
-                }
-                cell_l = cell_l->suiv;
+                    /*if ( i ==1 ) {
+                    printf("cell to be added\n");
+                    afficher_liste_D(new_clause->data);
+                    printf("List to be added after before adding the cell")
+                    } */
+
+                    add_cell_C(neg_clauses, new_clause);  // The list is modified outside of this function (No error here) 
+                    // The printing statements are weird
+                    if ( i == 1 && neg_clauses->size <= 3) {
+                        printf(" List after adding new cell\n");
+                        afficher_liste_C(neg_clauses);
+                    } 
+             
+                } 
+                cell_l = cell_l->suiv;  
+                // The list is not changed here -> correct here   
             }
             cell_l = List->first;
         } 
@@ -375,5 +401,6 @@ Liste_Di_2* rewrite_var(Liste_C *L, dictionary *D) {
     }
 }
 */
+
 
 
