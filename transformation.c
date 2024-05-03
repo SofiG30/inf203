@@ -138,9 +138,10 @@ Liste_C* positive_clauses (Liste_D *L, Liste_D *Se){
             
             }
         } 
+        
         Cellule_C *new_cell = malloc(sizeof(Cellule_C));
         new_cell->data = literal;
-        new_cell->suiv = NULL;
+        new_cell->suiv = NULL; 
         add_cell_C(clause, new_cell);
         curr = curr->suiv;
    
@@ -172,77 +173,68 @@ Liste_C* positive_clauses (Liste_D *L, Liste_D *Se){
 
 
 
+Liste_C* construct_clause_neg(Liste_C *L_pos, Liste_D* Se) {
 
-Liste_C* construct_clause_neg (Liste_C *L, Liste_D *Se) {
+    // Initialiser la sequence 
+    Liste_C* neg_clauses = init_empty_clause();
 
-    Liste_C *neg_clauses = init_empty_clause();
-
-    if (L->first == NULL) {
-        printf("Error, no clauses are on the list\n");
+    if (L_pos->first == NULL) {
+        printf("Error, there are no clauses on the list\n");
         return neg_clauses;
     }
 
-    int grid_size = Se->size_grid;
-    for (int i = 1; i <= grid_size; i++) {
-        // This list will have all cells with pos value i
-        Liste_D *List = extract_list(L,Se,i);
-       // printf("List length = %d\n", List->length);
+    for (int i = 1; i <= Se->size_grid; i++) {
+        // We want all the values that contain the cells with element i
+        Liste_D *List = extract_list(L_pos, Se, i);
+            
         while (List->length >= 2) {
-            Cellule_D *curr = pop_cell(List);
-           // printf(" cell extracted = %d %d %d\n", curr->li, curr->col, curr->el);
-            Cellule_D *cell_l = List->first;
+            // Extract the first element of the cell
+            Cellule_D* curr = pop_cell(List); // Here List is modified -> doesnt contain curr anymore
+            // Compare curr with all cells in List 
+            Cellule_D* cell_l = List->first;   
+            // We go through the whole list
             while (cell_l != NULL) {
-             //   printf("Curr cell %d %d %d\n", cell_l->li, cell_l->col, cell_l->el);
-                if ( same_lcr(curr, cell_l) == true) {
-                    // here the list is already wrong ??
-                    /*if ( i == 1) {
-                        printf(" List \n");
-                        afficher_liste_C(neg_clauses);
-                        printf("\n");
-                    } */
-                    //printf(" true\n");
+                // Check if the cells share the same l,c,r
+                if (same_lcr(curr,cell_l)) {
+                    // Add the cells to a new list
                     Liste_D *literal = init_liste();
-                    add_cell_D(literal, curr);
+                    if (literal == NULL) {
+                        printf("Memory allocation error\n");
+                        free_list(literal);
+                        return neg_clauses;
+                    }
 
+                    // temporary cell of curr;
+                    Cellule_D *tmp_curr = malloc(sizeof(Cellule_D));
+                    tmp_curr->li = curr->li;
+                    tmp_curr->col = curr->col;
+                    tmp_curr->el = curr->el;
+                    tmp_curr->reg = curr->reg;
+                    tmp_curr->suiv = NULL;
+                    add_cell_D(literal, tmp_curr);  
+
+                                  
+                    // Temporary cell of cell_l
                     Cellule_D *tmp = malloc(sizeof(Cellule_D));
+                    tmp->li =  cell_l->li;
                     tmp->col = cell_l->col;
-                    tmp->el = cell_l->el;
-                    tmp->li = cell_l->li;
+                   tmp->el = cell_l->el;
                     tmp->reg = cell_l->reg;
                     tmp->suiv = NULL;
-                    add_cell_D(literal, tmp);
-                    
-                    // error is here -> when changing the cell_l -> modifies the previous cell_l 
-                    // ex  1) (1,2,2,1) , (1,3,1,1)
-                    // when changing cell_l
-                    // 2) (1,2,2,1) , (4,2,1,3)
-                    //    (1,2,2,1) , (4,2,1,3)
 
-                    // But i exxpect 2) (1,2,2,1) , (1,3,1,1)
-                    //                  (1,2,2,1) , (4,2,1,3)
-                    Cellule_C *new_clause = malloc(sizeof(Cellule_C));
-                    new_clause->data = literal;
-                    new_clause->suiv = NULL;
-                    /*if ( i ==1 ) {
-                    printf("cell to be added\n");
-                    afficher_liste_D(new_clause->data);
-                    printf("List to be added after before adding the cell")
-                    } */
+                    add_cell_D(literal, tmp); 
 
-                    add_cell_C(neg_clauses, new_clause);  // The list is modified outside of this function (No error here) 
-                    // The printing statements are weird
-                    if ( i == 1 && neg_clauses->size <= 3) {
-                        printf(" List after adding new cell\n");
-                        afficher_liste_C(neg_clauses);
-                    } 
-             
-                } 
-                cell_l = cell_l->suiv;  
-                // The list is not changed here -> correct here   
+                    // Create a cell_c containing the literal list
+                    Cellule_C *new_cell = malloc(sizeof(Cellule_C));
+                    new_cell->data = literal;
+                    new_cell->suiv = NULL;
+                    add_cell_C(neg_clauses, new_cell);
+                    //free_list(literal);
+                }
+                cell_l = cell_l->suiv;
             }
-            cell_l = List->first;
-        } 
-        free_list(List);   
+        }
+        free_list(List);
     }
     return neg_clauses;
 }
@@ -251,7 +243,7 @@ Liste_C* construct_clause_neg (Liste_C *L, Liste_D *Se) {
 
 /*1. Function which takes the clause list as an argument and writes the DIMACS file 
 (this list will have already been transformed into x’s with readable indices: x1, x2, x3,….)*/
-void create_dimacs (Liste_Di_2 *Pos_clauses, Liste_Di_2 *Neg_clauses, char* file_name) {
+/*void create_dimacs (Liste_Di_2 *Pos_clauses, Liste_Di_2 *Neg_clauses, char* file_name) {
 
     FILE*f=fopen(file_name,"w");
     if (f==NULL){
@@ -274,13 +266,13 @@ void create_dimacs (Liste_Di_2 *Pos_clauses, Liste_Di_2 *Neg_clauses, char* file
 
         for (int i=1; current_clause != NULL && i<=Pos_clauses->size; i++){
         //i is the number of the clause we're treating 
-        if (current_clause->clause.first == NULL) {
+        if (current_clause->clause->first == NULL) {
             printf("Error, the clause is empty\n");
             fclose(f);
             return;
         } else {
-            Cell_Di *current_cell = current_clause->clause.first;
-            for (int j=1; current_cell != NULL && j <=current_clause->clause.size; j++) {
+            Cell_Di *current_cell = current_clause->clause->first;
+            for (int j=1; current_cell != NULL && j <=current_clause->clause->size; j++) {
                 //j goes from 1 to the size of the clause (nb of variables)
             
                 fprintf (f,"%d ",current_cell->var);
@@ -299,13 +291,13 @@ void create_dimacs (Liste_Di_2 *Pos_clauses, Liste_Di_2 *Neg_clauses, char* file
 
         for (int i=1; current_clause != NULL && i<=Neg_clauses->size; i++){
         //i is the number of the clause we're treating 
-        if (current_clause->clause.first == NULL) {
+        if (current_clause->clause->first == NULL) {
             printf("Error, the clause is empty\n");
             fclose(f);
             return;
         } else {
-            Cell_Di *current_cell = current_clause->clause.first;
-            for (int j=1; current_cell != NULL && j <=current_clause->clause.size; j++) {
+            Cell_Di *current_cell = current_clause->clause->size;
+            for (int j=1; current_cell != NULL && j <=current_clause->clause->size; j++) {
                 //j goes from 1 to the size of the clause (nb of variables)
             
                 fprintf (f,"-%d ",current_cell->var);
@@ -324,30 +316,38 @@ void create_dimacs (Liste_Di_2 *Pos_clauses, Liste_Di_2 *Neg_clauses, char* file
     fclose(f);
 
 }
+*/
 
 
 
 Liste_Di_2* rewrite_var(Liste_C *L, dictionary *D) {
 
-    Liste_Di_2 *new_list = init_listeDi_2();
-    
-
+    Liste_Di_2 *new_list = init_listeDi_2();    
     if (L->first == NULL) {
         printf("Error, the list is empty\n");
         return new_list;
     }
-
+    
     int variable = 1;
     Cellule_C *curr = L->first;
+    
     while (curr != NULL) {
-        Liste_Di *clause = init_liste_Di();
-        if (curr->data->first == NULL) {
+        
+        if (curr->data == NULL) {
+            // Is going in here
             printf("Error, the list is empty\n");
             return new_list;
         } 
+        Liste_Di *clause = init_liste_Di();
         clause->size = curr->data->length;
+
+
         Cellule_D *curr_elem = curr->data->first;
         while (curr_elem !=  NULL) {
+            if (curr_elem == NULL) {
+                printf("Error, current element is empty\n");
+                return new_list;
+            }          
             // Check the var is not already in dict
             int curr_key = get_key(D, curr_elem); 
             if (curr_key != 0) {
@@ -358,7 +358,6 @@ Liste_Di_2* rewrite_var(Liste_C *L, dictionary *D) {
                 add_key(D,variable, curr_elem);
                 variable++;           
             }
-
             curr_elem = curr_elem->suiv;
         }
         // Add the clause to the list of clauses
