@@ -3,47 +3,63 @@
 #include "dict.h"
 #include "types.h"
 #include "transformation.h"
+#include "clause.h"
 
 int main(int argc, char *argv[]) {
     
-    if (argc < 2) {
+    if (argc < 3) {
         printf("Error, not enough argument\n");
         return 1;
     } 
 
     FILE *f = fopen(argv[1], "r");
     if (f == NULL) {
-        printf("Error while opening the file\n");
+        printf("Error when opening the file\n");
         return 1;
     }
+
+    // Variables 
+    Liste_D *Grid = init_liste();
+    Liste_D *Se = init_liste();
+    Liste_C *pos_cl = init_empty_clause();
+    Liste_C *neg_cl = init_empty_clause();
+    dictionary *D = init_dict();
+    Liste_Di_2 *pos = init_listeDi_2();
+    Liste_Di_2 *neg = init_listeDi_2();
+
+    // We start by reading the sudoku grid
+    Se = read_sudoku(f, Grid);
+   // printf("Se\n");
+    //afficher_liste_D(Se);
+    //printf("\n");    // Create the clause lists 
+    // Positive 
+    pos_cl = positive_clauses(Grid, Se);    
+    //printf("\n");
     
-    Liste *Se = read_sudoku(f);
-    afficher_liste(Se);
+    neg_cl = construct_clause_neg(pos_cl, Se);  
+    //afficher_liste_C(neg_cl);
 
-    /* Test for rewrite_var function
- 
-    Liste_C *L = init_listeClause();
-    for (int j = 0 ; j < 3 ; j++) {
-        // printf("Error here\n");
-        
-        Liste_D *clause = init_liste(); 
 
-        for (int i = 0; i < 3; i++) {
-            Cellule_D *new_cell = malloc(sizeof(Cellule_D));
-            printf("Add values: \n");
-            scanf("%d" , &new_cell->li);
-            scanf("%d" , &new_cell->col);
-            scanf("%d" , &new_cell->el);
-            scanf("%d" , &new_cell->reg);
-            new_cell->suiv = NULL;
-            add_cell(clause, new_cell);
-        }
-        add_cell_Clause(L, clause);
-    }
-Liste_Di_2 *final_list = rewrite_var(L);
+    // Turn the lists into Di_lists (Only integers represent the cases) + store in dict
+    pos = rewrite_var(pos_cl,D);
+    //afficher_liste_Di2(pos); 
+    //printf("Negative clauses\n");
+    neg = rewrite_var(neg_cl, D);
+    //afficher_liste_Di2(neg);
 
-create_dimacs(final_list, argv[1]); */
+     
+    // Write the dimacs file 
+    create_dimacs(pos, neg, argv[2]);
 
-    return 0;
+    // Free all the lists -> prevent memory problems
+    free(Se);
+    free(Grid);
+    free(pos_cl);
+    free(neg_cl);
+    free(pos);
+    free(neg);
+    detruire_dict(D);
+    fclose(f);
 
+return 0;
 }
