@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -27,7 +26,7 @@ void add_cell_D(Liste_D *L, Cellule_D *c) {
 }
 
 
-void add_cell_C(Liste_C *L, Cellule_C *c) {
+void add_cell_C(Liste_C *L, Cellule_C  *c) {
     if (L == NULL || c == NULL) {
         return;
     }
@@ -35,12 +34,21 @@ void add_cell_C(Liste_C *L, Cellule_C *c) {
     if (L->first == NULL) {
         L->first = c;
         L->last = c;
-        L->size = 1;
+
+        if (c->data->length != 0) {
+            L->size = 1;
+        }
+
     } else {
+      
         L->last->suiv = c;
         L->last = L->last->suiv;
-        L->size = L->size + 1;
+
+        if (c->data->length != 0) {
+            L->size =  L->size + 1;
+        }
     }
+
 }
 
 Liste_C* init_empty_clause() {
@@ -55,7 +63,6 @@ Liste_C* init_empty_clause() {
 void afficher_liste_D(Liste_D *L) {
 
     if (L->first == NULL) {
-       // printf("Error, the list is empty\n");
         return;
     } else {
         Cellule_D *curr = L->first;
@@ -72,7 +79,6 @@ void afficher_liste_D(Liste_D *L) {
 void afficher_liste_C(Liste_C *L) {
     
     if (L->first == NULL) {
-        printf("Error, the list is empty\n");
         return;
     } else {
         Cellule_C *curr = L->first;
@@ -83,6 +89,33 @@ void afficher_liste_C(Liste_C *L) {
     }
     printf("\n");
 
+}
+
+void afficher_liste_Di(Liste_Di *L) {
+    if (L->first == NULL) {
+        return;
+    } 
+    Cell_Di *curr = L->first;
+    while (curr != NULL) {
+        printf(" %d", curr->var);
+        curr = curr->suiv;
+    }
+}
+
+void afficher_liste_Di2(Liste_Di_2 *L) {
+    if (L->first == NULL) {
+        printf("Error, the list is empty\n");
+        return;
+    }
+
+    printf(" number of clauses = %d\n", L->size);
+    printf(" number of variables = %d\n", L->nb_var);
+    Cellule_Di_2 *curr = L->first;
+    while (curr != NULL) {
+        afficher_liste_Di(curr->clause);
+        printf("\n");
+        curr = curr->suiv;
+    }
 }
 
 Liste_Di_2* init_listeDi_2() {
@@ -122,19 +155,23 @@ void add_cell_Di(Liste_Di *L, int val){
 void add_liste(Liste_Di *clause, Liste_Di_2 *L) {
 
     Cellule_Di_2 *new_cell = malloc(sizeof(Cellule_Di_2));
-    new_cell->clause = *clause;
+    new_cell->clause = clause;
     new_cell->suiv = NULL;
 
     if (L->first == NULL) {
         L->first = new_cell;
         L->last = new_cell;
-        L->size = 1;
-        L->nb_var = new_cell->clause.size;
+        if (clause->size != 0 ) {
+            L->size = 1;
+        }
+        L->nb_var = new_cell->clause->size;
     } else {
         L->last->suiv = new_cell;
         L->last = L->last->suiv;
-        L->size = L->size + 1;
-        L->nb_var =  L->nb_var + new_cell->clause.size;
+        if (clause->size != 0){
+            L->size = L->size + 1;
+        }
+        L->nb_var =  L->nb_var + new_cell->clause->size;
     }
 }
 
@@ -168,3 +205,4 @@ void free_list(Liste_D *list) {
         free(temp); // Free memory for the current cell
     }
     free(list); // Free memory for the list structure
+}
