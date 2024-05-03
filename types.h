@@ -56,7 +56,7 @@ typedef struct Liste2_ {
 
 // TYPES FOR THE CLAUSE ITSELF
 typedef struct Cellule_Liste_Clause2_ {
-    Liste_Di clause;   
+    Liste_Di *clause;   
 	struct Cellule_Liste_Clause2_* suiv;
 } Cellule_Di_2;
 
@@ -74,10 +74,18 @@ Liste_D* init_liste();
 
 void add_cell_D(Liste_D *L, Cellule_D *c) ;
 
-void add_cell_C(Liste_C *L, Cellule_C *c);
+void add_cell_C(Liste_C *L, Cellule_C*c);
 
-Liste_C* init_listeClause();
+Liste_C* init_empty_clause();
 
+// Function just to verify the list is correctly formed
+void afficher_liste_D(Liste_D *L);
+
+void afficher_liste_C(Liste_C *L);
+
+void afficher_liste_Di(Liste_Di *L);
+
+void afficher_liste_Di2(Liste_Di_2 *L);
 
 // Aux function rewrite_var
 Liste_Di_2* init_listeDi_2() ;
@@ -90,5 +98,9 @@ void add_liste(Liste_Di *clause, Liste_Di_2 *L);
 
 // Function to test -> Not necessary afterwards
 void add_cell_Clause(Liste_C *L, Liste_D *c);
+
+void free_list(Liste_D *list) ;
+
+
  
 #endif
